@@ -1,0 +1,2 @@
+Il faut faire des push , quand on change les fichiers de configuration 
+initialiser le depot git par la commande ==> git init  , ajouter les fichier modifié par ==> git add nom_fichier  , push les fichier avec git commit -m'nom de commit plus des petites remarques'

@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>com.zaghir.microservices</groupId>
+	<artifactId>limits-service</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>jar</packaging>
+
+	<name>limits-service</name>
+	<description>microservice limits-service</description>
+
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>2.0.1.RELEASE</version>
+		<relativePath/> <!-- lookup parent from repository -->
+	</parent>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<java.version>1.8</java.version>
+		<spring-cloud.version>Finchley.M9</spring-cloud.version>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-config</artifactId>
+		</dependency>
+		
+<!--			le micro service limit-service , expose des variables de configurations qui seront utilisées par d'autres micro services 
+			ces variables sont parametrés sur plusieurs envirenements  [dev , qualif , prod ] par des fichiers qui sont versionnés sur le depot git
+			spring cloud config server a la possibilté de recuperer les variables dans le depot git
+			pour chager les valeurs des variables on passe par un push sur git 
+			et pour metre à jour ces variables il faut passer une requette de type post a travers le module actuator de spring boot v2, url est :
+			   http://localhost:8080/actuator/bus-refresh
+			le probléme c'est quand on a plusieurs instances de micro service limit-service , le changement sera pris que pas l'instance ou on a fait le refresh ici c'est l'instance sur le port:8080 qui va recuperer la mise a jour 
+			pour que les autres instances prennent en charge les modifications il faut passer la requette refresh sur toutes les instances ,c'est compliqué à le faire
+			spring-cloud-bus-amqp utilise ribbitMQ par defaut comme une queue , à chaque fois qu'on execute une requette de mise a jour type Post qui recharge les variables de configurations
+			spring-bus enregistre les modifications dans la queue , cette queue sera partager par toutes les instances des micro service ,
+			donc ce cas une seule requette de refresh sur une instance d'un micro serve modifi les varibles de configuration pour toutes les instances de ce micro service { 8080 , 8081...}
+			
+			pour tester il faut :
+			1- lancer le micro service spring-cloud-config-server
+			2- lancer le micro service limit-service 
+			3- avoir le service rabbitMQ demarrer comme service windows
+			4- faire des modifications sur les fichier de configurations et faire des push sur le depot git
+			5- passer la request post pour faire un refresh des varibles de configuration sur une instance
+			     ici sur le port http://localhost:8080/actuator/bus-refresh  pour spring boot v2.00 +
+			                     http://localhost:8080/bus/refresh pour sprinf 1.5 < 2
+			6- tester le changement sur les autres instances des micro services
+			    port 8080 : http:/localhost:8080/limits
+			    port 8084 : http:/localhost:8084/limits
+   -->
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-bus-amqp</artifactId>
+		</dependency>
+		
+		<!--
+		     il faut ajouter cette property dans les service qui utilise hystrix pour la tolerence des pasge
+			 management.endpoints.web.exposure.include=*			 
+		 -->
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-netflix-hystrix</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-devtools</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-dependencies</artifactId>
+				<version>${spring-cloud.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
+
+	<repositories>
+		<repository>
+			<id>spring-milestones</id>
+			<name>Spring Milestones</name>
+			<url>https://repo.spring.io/milestone</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
+
+
+</project>
